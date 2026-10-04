@@ -1,132 +1,42 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Panel Admin - Website Kelas</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <!-- NAVBAR -->
-    <nav class="navbar">
-      <h1>👑 Panel Admin</h1>
-      <div class="nav-user">
-        <span id="user-info"></span>
-        <span class="badge admin" id="role-badge">ADMIN</span>
-        <a
-          href="../frontend-murid/index.html"
-          class="btn-outline"
-          target="_blank"
-          >👁 Lihat Murid</a
-        >
-        <button class="btn-logout" onclick="logout()">Logout</button>
-      </div>
-    </nav>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Admin - Website Kelas</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <h1>👑 Panel Admin</h1>
+    <div class="nav-user">
+      <span id="user-info"></span>
+      <span class="badge admin" id="role-badge">ADMIN</span>
+      <a href="../frontend-murid/index.html" class="btn-outline" target="_blank">👁 Lihat Murid</a>
+      <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+  </nav>
 
-    <!-- KONTEN -->
-    <div class="container">
-      <!-- TABS -->
-      <div class="tabs">
-        <button class="tab active" onclick="switchTab('info', this)">
-          📋 Info Kelas
-        </button>
-        <button class="tab" onclick="switchTab('pelajaran', this)">
-          📅 Pelajaran
-        </button>
-        <button class="tab" onclick="switchTab('piket', this)">🧹 Piket</button>
-        <button class="tab" onclick="switchTab('pengumuman', this)">
-          📢 Pengumuman
-        </button>
-        <button class="tab" onclick="switchTab('agenda', this)">
-          🎉 Agenda
-        </button>
-        <button class="tab" onclick="switchTab('struktur', this)">
-          👥 Struktur
-        </button>
-        <!-- Tab Akses Akun — cuma muncul kalau developer -->
-        <button
-          class="tab hidden"
-          id="tab-akun"
-          onclick="switchTab('akun', this)"
-        >
-          🔑 Akses Akun
-        </button>
-      </div>
-
-      <!-- ISI KONTEN (diisi JavaScript) -->
-      <div id="content">
-        <p style="text-align: center; padding: 40px; color: #999">
-          Memuat data...
-        </p>
-      </div>
+  <!-- KONTEN -->
+  <div class="container">
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('info', this)">📋 Info Kelas</button>
+      <button class="tab" onclick="switchTab('pelajaran', this)">📅 Pelajaran</button>
+      <button class="tab" onclick="switchTab('piket', this)">🧹 Piket</button>
+      <button class="tab" onclick="switchTab('pengumuman', this)">📢 Pengumuman</button>
+      <button class="tab" onclick="switchTab('agenda', this)">🎉 Agenda</button>
+      <button class="tab" onclick="switchTab('struktur', this)">👥 Struktur</button>
+      <button class="tab hidden" id="tab-akun" onclick="switchTab('akun', this)">🔑 Akses Akun</button>
     </div>
 
-    <script src="script.js"></script>
-  </body>
-</html>
-<!doctype html>
-<html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Panel Admin - Website Kelas</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <!-- NAVBAR -->
-    <nav class="navbar">
-      <h1>👑 Panel Admin</h1>
-      <div class="nav-user">
-        <span id="user-info"></span>
-        <span class="badge admin" id="role-badge">ADMIN</span>
-        <a
-          href="../frontend-murid/index.html"
-          class="btn-outline"
-          target="_blank"
-          >👁 Lihat Murid</a
-        >
-        <button class="btn-logout" onclick="logout()">Logout</button>
-      </div>
-    </nav>
-
-    <!-- KONTEN -->
-    <div class="container">
-      <!-- TABS -->
-      <div class="tabs">
-        <button class="tab active" onclick="switchTab('info', this)">
-          📋 Info Kelas
-        </button>
-        <button class="tab" onclick="switchTab('pelajaran', this)">
-          📅 Pelajaran
-        </button>
-        <button class="tab" onclick="switchTab('piket', this)">🧹 Piket</button>
-        <button class="tab" onclick="switchTab('pengumuman', this)">
-          📢 Pengumuman
-        </button>
-        <button class="tab" onclick="switchTab('agenda', this)">
-          🎉 Agenda
-        </button>
-        <button class="tab" onclick="switchTab('struktur', this)">
-          👥 Struktur
-        </button>
-        <!-- Tab Akses Akun — cuma muncul kalau developer -->
-        <button
-          class="tab hidden"
-          id="tab-akun"
-          onclick="switchTab('akun', this)"
-        >
-          🔑 Akses Akun
-        </button>
-      </div>
-
-      <!-- ISI KONTEN (diisi JavaScript) -->
-      <div id="content">
-        <p style="text-align: center; padding: 40px; color: #999">
-          Memuat data...
-        </p>
-      </div>
+    <!-- ISI KONTEN -->
+    <div id="content">
+      <p style="text-align:center;padding:40px;color:#999;">Memuat data...</p>
     </div>
+  </div>
 
-    <script src="script.js"></script>
-  </body>
+  <script src="script.js"></script>
+</body>
 </html>
