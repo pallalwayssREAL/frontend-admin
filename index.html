@@ -1,34 +1,26 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login Admin</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="auth-wrapper">
-      <div class="auth-box">
-        <h2>🔐 Login Admin</h2>
-        <input type="email" id="email" placeholder="Email" />
-        <input
-          type="password"
-          id="password"
-          placeholder="Password"
-          onkeypress="if (event.key === 'Enter') handleLogin();"
-        />
-        <button onclick="handleLogin()">Login</button>
-        <p class="toggle-text" style="margin-top: 8px">
-          <a
-            href="../frontend-murid/index.html"
-            style="color: #888; font-weight: 400"
-            >← Halaman Murid</a
-          >
-        </p>
-        <div id="message" class="msg"></div>
-      </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Admin - Website Kelas</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="auth-wrapper">
+    <div class="auth-box">
+      <h2>Login Admin</h2>
+      <p class="subtitle">// masuk ke panel kelas</p>
+      <input type="email" id="email" placeholder="admin@kelas.com">
+      <input type="password" id="password" placeholder="••••••••" onkeypress="if(event.key==='Enter')handleLogin()">
+      <button onclick="handleLogin()">Login</button>
+      <p class="toggle-text">
+        <a href="../frontend-murid/index.html" style="color:#94a3b8;">← kembali ke halaman murid</a>
+      </p>
+      <div id="message" class="msg"></div>
     </div>
+  </div>
 
-    <script src="script.js"></script>
-  </body>
+  <script src="script.js"></script>
+</body>
 </html>
