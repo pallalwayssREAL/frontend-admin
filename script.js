@@ -15,6 +15,7 @@ let DATA = {
   events: [],
   users: [],
   admins: [],
+  structure: [],
 };
 
 const $ = (id) => document.getElementById(id);
@@ -57,8 +58,7 @@ async function handleLogin() {
   const email = $("email").value.trim();
   const password = $("password").value;
 
-  if (!email || !password)
-    return showMsg("Email & password wajib diisi", "error");
+  if (!email || !password) return showMsg("Email & password wajib diisi", "error");
 
   showMsg("Memproses...", "");
 
@@ -109,8 +109,9 @@ async function initAdminPanel() {
     const badge = $("role-badge");
     if (CURRENT_USER.role === "developer") {
       badge.textContent = "DEVELOPER";
-      badge.style.background = "#d4edda";
-      badge.style.color = "#155724";
+      badge.style.background = "rgba(0,255,157,0.1)";
+      badge.style.color = "#00ff9d";
+      badge.style.borderColor = "rgba(0,255,157,0.3)";
       $("tab-akun").classList.remove("hidden");
     } else {
       badge.textContent = "ADMIN";
@@ -140,7 +141,7 @@ async function loadAllData() {
     return res.json();
   };
 
-  const [info, schedules, cleanings, announcements, events, users] =
+  const [info, schedules, cleanings, announcements, events, users, structure] =
     await Promise.all([
       fetchJSON("/api/class-info"),
       fetchJSON("/api/schedule"),
@@ -148,6 +149,7 @@ async function loadAllData() {
       fetchJSON("/api/announcement"),
       fetchJSON("/api/event"),
       fetchJSON("/api/auth/users"),
+      fetchJSON("/api/structure"),
     ]);
 
   DATA = {
@@ -157,6 +159,7 @@ async function loadAllData() {
     announcements: announcements.announcements || [],
     events: events.events || [],
     users: users.users || [],
+    structure: structure.structure || [],
     admins: DATA.admins || [],
   };
 }
@@ -204,7 +207,7 @@ function renderInfo() {
   const i = DATA.info || {};
   return `
     <div class="card">
-      <h2>📋 Edit Info Kelas</h2>
+      <h2>Edit Info Kelas</h2>
       <div class="admin-form">
         <div class="row">
           <div class="form-group"><label>Nama Kelas</label><input id="i-nama" value="${i.namaKelas || ""}"></div>
@@ -252,7 +255,7 @@ function renderPelajaran() {
   const data = DATA.schedules || [];
   return `
     <div class="card">
-      <h2>📅 Kelola Jadwal Pelajaran</h2>
+      <h2>Kelola Jadwal Pelajaran</h2>
       <div class="admin-form">
         <h3>➕ Tambah Jadwal</h3>
         <div class="row">
@@ -326,7 +329,7 @@ function renderPiket() {
   const data = DATA.cleanings || [];
   return `
     <div class="card">
-      <h2>🧹 Kelola Jadwal Piket</h2>
+      <h2>Kelola Jadwal Piket</h2>
       <div class="admin-form">
         <h3>➕ Atur Piket</h3>
         <div class="row">
@@ -386,7 +389,7 @@ function renderPengumuman() {
   const data = DATA.announcements || [];
   return `
     <div class="card">
-      <h2>📢 Kelola Pengumuman</h2>
+      <h2>Kelola Pengumuman</h2>
       <div class="admin-form">
         <h3>➕ Buat Pengumuman</h3>
         <div class="form-group"><label>Judul</label><input id="a-judul"></div>
@@ -439,7 +442,7 @@ function renderAgenda() {
   const data = DATA.events || [];
   return `
     <div class="card">
-      <h2>🎉 Kelola Agenda</h2>
+      <h2>Kelola Agenda</h2>
       <div class="admin-form">
         <h3>➕ Tambah Agenda</h3>
         <div class="row">
@@ -502,29 +505,150 @@ async function delEvent(id) {
 }
 
 // ============================================
-// TAB 6: STRUKTUR
+// TAB 6: STRUKTUR (CRUD dari admin)
 // ============================================
 function renderStruktur() {
-  const users = (DATA.users || []).filter(u => u.jabatan);
+  const data = DATA.structure || [];
+
   return `
     <div class="card">
-      <h2>👥 Struktur Organisasi Kelas</h2>
-      <p style="color:#888;font-size:13px;margin-bottom:15px;">
-        Struktur diambil otomatis dari data murid yang mendaftar dengan jabatan.
-      </p>
-      ${users.length ? `
-        <div class="struktur-grid">
-          ${users.map(u => `
-            <div class="struktur-card">
-              <div class="avatar">${(u.name || "?").charAt(0).toUpperCase()}</div>
-              <div class="jabatan">${u.jabatan}</div>
-              <div class="nama">${u.name}</div>
-            </div>
-          `).join("")}
+      <h2>Struktur Organisasi Kelas</h2>
+
+      <div class="admin-form">
+        <h3>➕ Tambah Anggota Struktur</h3>
+        <div class="row">
+          <div class="form-group"><label>Nama</label><input id="s-nama" placeholder="Contoh: Budi Santoso"></div>
+          <div class="form-group"><label>Jabatan</label><input id="s-jabatan" placeholder="Contoh: Ketua Kelas"></div>
+          <div class="form-group"><label>Urutan (angka)</label><input id="s-urutan" type="number" value="0" placeholder="1 = paling atas"></div>
         </div>
-      ` : '<div class="empty">Belum ada murid dengan jabatan.</div>'}
+        <button class="btn" onclick="addStruktur()">➕ Tambah</button>
+      </div>
+
+      ${
+        data.length
+          ? `
+        <div class="tree-wrap">
+          <div class="tree">
+            ${buildTree(data)}
+          </div>
+        </div>
+
+        <h3 style="margin-top:30px;margin-bottom:12px;">📋 Daftar Anggota</h3>
+        <table>
+          <thead>
+            <tr><th>Nama</th><th>Jabatan</th><th>Urutan</th><th>Aksi</th></tr>
+          </thead>
+          <tbody>
+            ${data.map((d) => `
+              <tr>
+                <td>${d.nama}</td>
+                <td>${d.jabatan}</td>
+                <td>${d.urutan}</td>
+                <td><button class="btn-sm btn-danger" onclick="delStruktur(${d.id})">Hapus</button></td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `
+          : '<div class="empty">Belum ada struktur. Tambah di atas.</div>'
+      }
     </div>
   `;
+}
+
+function buildTree(data) {
+  const groups = {};
+  data.forEach((item) => {
+    const j = item.jabatan.toLowerCase();
+    let key = "lainnya";
+    if (j.includes("wali")) key = "walikelas";
+    else if (j.includes("wakil")) key = "wakil";
+    else if (j.includes("ketua")) key = "ketua";
+    else if (j.includes("sekretaris")) key = "sekretaris";
+    else if (j.includes("bendahara")) key = "bendahara";
+    else if (j.includes("keamanan")) key = "keamanan";
+    else if (j.includes("kebersihan")) key = "kebersihan";
+    else if (j.includes("kesehatan")) key = "kesehatan";
+    else if (j.includes("peralatan")) key = "peralatan";
+
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(item);
+  });
+
+  const makeNode = (label, items, isTop = false) => {
+    if (!items || !items.length) return "";
+    return `
+      <div class="tree-node">
+        <div class="node-label">${label}</div>
+        ${items.map((n) => `<div class="node-box ${isTop ? "top" : ""}">${n.nama}</div>`).join("")}
+      </div>
+    `;
+  };
+
+  const has = (...keys) => keys.some((k) => groups[k] && groups[k].length);
+
+  let html = "";
+
+  if (groups.walikelas) {
+    html += `<div class="tree-level">${makeNode("Wali Kelas", groups.walikelas, true)}</div>`;
+  }
+
+  if (has("ketua", "wakil")) {
+    html += `<div class="tree-level">${makeNode("Ketua Kelas", groups.ketua)}${makeNode("Wakil Ketua", groups.wakil)}</div>`;
+  }
+
+  if (has("sekretaris", "bendahara")) {
+    html += `<div class="tree-level">${makeNode("Sekretaris", groups.sekretaris)}${makeNode("Bendahara", groups.bendahara)}</div>`;
+  }
+
+  if (has("keamanan", "kebersihan", "kesehatan")) {
+    html += `<div class="tree-level">${makeNode("Keamanan", groups.keamanan)}${makeNode("Kebersihan", groups.kebersihan)}${makeNode("Kesehatan", groups.kesehatan)}</div>`;
+  }
+
+  if (groups.peralatan) {
+    html += `<div class="tree-level">${makeNode("Peralatan", groups.peralatan)}</div>`;
+  }
+
+  if (groups.lainnya) {
+    html += `<div class="tree-level">${makeNode("Anggota", groups.lainnya)}</div>`;
+  }
+
+  return html;
+}
+
+async function addStruktur() {
+  const body = {
+    nama: $("s-nama").value.trim(),
+    jabatan: $("s-jabatan").value.trim(),
+    urutan: +$("s-urutan").value || 0,
+  };
+
+  if (!body.nama || !body.jabatan) return alert("Isi nama & jabatan");
+
+  const res = await fetch(API + "/api/structure", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(body),
+  });
+
+  if (res.ok) {
+    await loadAllData();
+    renderTab("struktur");
+    alert("✅ Ditambah!");
+  } else {
+    alert("❌ Gagal tambah");
+  }
+}
+
+async function delStruktur(id) {
+  if (!confirm("Hapus anggota ini?")) return;
+  await fetch(API + "/api/structure/" + id, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  await loadAllData();
+  renderTab("struktur");
 }
 
 // ============================================
@@ -534,9 +658,9 @@ function renderAksesAkun() {
   const admins = DATA.admins || [];
   return `
     <div class="card">
-      <h2>🔑 Akses Akun</h2>
-      <p style="color:#888;font-size:13px;margin-bottom:15px;">
-        Kelola akun admin & developer. Cuma developer yang bisa akses halaman ini.
+      <h2>Akses Akun</h2>
+      <p style="color:#94a3b8;font-size:13px;margin-bottom:15px;font-family:'JetBrains Mono',monospace;">
+        // kelola akun admin & developer
       </p>
       <div class="admin-form">
         <h3>➕ Buat Akun Admin Baru</h3>
@@ -564,18 +688,17 @@ function renderAksesAkun() {
           <tbody>
             ${admins.map(a => `
               <tr>
-                <td><strong>${a.name}</strong>${a.id === CURRENT_USER.id ? ' <span style="color:#667eea;font-size:11px;">(kamu)</span>' : ''}</td>
+                <td><strong>${a.name}</strong>${a.id === CURRENT_USER.id ? ' <span style="color:#00d4ff;font-size:11px;">(kamu)</span>' : ''}</td>
                 <td>${a.email}</td>
                 <td>
-                  <span class="badge ${a.role === 'developer' ? 'admin' : 'anggota'}"
-                        style="${a.role === 'developer' ? 'background:#d4edda;color:#155724;' : ''}">
+                  <span class="badge ${a.role === 'developer' ? 'admin' : 'anggota'}">
                     ${a.role.toUpperCase()}
                   </span>
                 </td>
                 <td>${a.jabatan || "-"}</td>
                 <td>
                   ${a.id === CURRENT_USER.id
-                    ? '<span style="color:#999;font-size:12px;">—</span>'
+                    ? '<span style="color:#94a3b8;font-size:12px;">—</span>'
                     : `<button class="btn-sm btn-danger" onclick="delAdmin(${a.id})">Hapus</button>`}
                 </td>
               </tr>
