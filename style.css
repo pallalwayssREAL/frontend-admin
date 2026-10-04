@@ -899,7 +899,6 @@ tbody tr:hover td {
   box-shadow: 0 0 40px rgba(168, 85, 247, 0.7);
 }
 
-/* Garis penghubung horizontal (antar siblings) */
 .tree-level .tree-node::before {
   content: '';
   position: absolute;
@@ -912,19 +911,10 @@ tbody tr:hover td {
   box-shadow: 0 0 8px rgba(0, 255, 157, 0.6);
 }
 
-.tree-level .tree-node:first-child::before {
-  left: 50%;
-}
+.tree-level .tree-node:first-child::before { left: 50%; }
+.tree-level .tree-node:last-child::before { right: 50%; }
+.tree-level .tree-node:only-child::before { display: none; }
 
-.tree-level .tree-node:last-child::before {
-  right: 50%;
-}
-
-.tree-level .tree-node:only-child::before {
-  display: none;
-}
-
-/* Garis penghubung vertikal (dari horizontal ke node) */
 .tree-level .tree-node::after {
   content: '';
   position: absolute;
@@ -958,28 +948,18 @@ tbody tr:hover td {
    RESPONSIVE
    ============================================ */
 @media (max-width: 768px) {
-  .navbar {
-    padding: 12px 16px;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
+  .navbar { padding: 12px 16px; flex-wrap: wrap; gap: 12px; }
   .logo-text .main { font-size: 14px; }
   .logo-text .sub { font-size: 9px; }
   .logo-img { width: 40px; height: 40px; }
-
   .nav-user { font-size: 11px; gap: 8px; flex-wrap: wrap; }
-
   .container { margin: 20px auto; padding: 0 16px; }
   .auth-box { padding: 32px 24px; }
   .card { padding: 20px; }
-
   .tab { padding: 8px 12px; font-size: 12px; }
-
   .info-grid { grid-template-columns: 1fr; }
   table { font-size: 11px; }
   th, td { padding: 10px 12px; }
-
   .tree-level { gap: 30px; padding-top: 30px; }
   .tree-node .node-box { font-size: 11px; padding: 8px 14px; }
   .tree-node .node-box.top { font-size: 13px; padding: 10px 20px; }
