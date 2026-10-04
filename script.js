@@ -51,9 +51,6 @@ function showMsg(text, type) {
   el.className = "msg " + type;
 }
 
-// ============================================
-// LOGIN
-// ============================================
 async function handleLogin() {
   const email = $("email").value.trim();
   const password = $("password").value;
@@ -517,10 +514,22 @@ function renderStruktur() {
       <div class="admin-form">
         <h3>➕ Tambah Anggota Struktur</h3>
         <div class="row">
-          <div class="form-group"><label>Nama</label><input id="s-nama" placeholder="Contoh: Budi Santoso"></div>
-          <div class="form-group"><label>Jabatan</label><input id="s-jabatan" placeholder="Contoh: Ketua Kelas"></div>
-          <div class="form-group"><label>Urutan (angka)</label><input id="s-urutan" type="number" value="0" placeholder="1 = paling atas"></div>
+          <div class="form-group">
+            <label>Nama</label>
+            <input id="s-nama" placeholder="Contoh: Budi Santoso">
+          </div>
+          <div class="form-group">
+            <label>Jabatan</label>
+            <input id="s-jabatan" placeholder="Contoh: Ketua Kelas">
+          </div>
+          <div class="form-group">
+            <label>Urutan (min 1, harus unik)</label>
+            <input id="s-urutan" type="number" min="1" value="1" placeholder="1, 2, 3, ...">
+          </div>
         </div>
+        <p style="color:#fbbf24;font-size:12px;margin-bottom:12px;font-family:'JetBrains Mono',monospace;">
+          ⚠ Urutan minimal 1 & tidak boleh sama dengan anggota lain
+        </p>
         <button class="btn" onclick="addStruktur()">➕ Tambah</button>
       </div>
 
@@ -536,14 +545,14 @@ function renderStruktur() {
         <h3 style="margin-top:30px;margin-bottom:12px;">📋 Daftar Anggota</h3>
         <table>
           <thead>
-            <tr><th>Nama</th><th>Jabatan</th><th>Urutan</th><th>Aksi</th></tr>
+            <tr><th>Urutan</th><th>Nama</th><th>Jabatan</th><th>Aksi</th></tr>
           </thead>
           <tbody>
             ${data.map((d) => `
               <tr>
+                <td>${d.urutan}</td>
                 <td>${d.nama}</td>
                 <td>${d.jabatan}</td>
-                <td>${d.urutan}</td>
                 <td><button class="btn-sm btn-danger" onclick="delStruktur(${d.id})">Hapus</button></td>
               </tr>
             `).join("")}
@@ -556,6 +565,9 @@ function renderStruktur() {
   `;
 }
 
+// ============================================
+// BUILD TREE — BAGAN KANAN KIRI
+// ============================================
 function buildTree(data) {
   const groups = {};
   data.forEach((item) => {
@@ -575,55 +587,83 @@ function buildTree(data) {
     groups[key].push(item);
   });
 
-  const makeNode = (label, items, isTop = false) => {
+  const makeNode = (label, items, isTop = false, hasChildren = false) => {
     if (!items || !items.length) return "";
     return `
-      <div class="tree-node">
+      <div class="tree-node ${hasChildren ? "has-children" : ""}">
         <div class="node-label">${label}</div>
         ${items.map((n) => `<div class="node-box ${isTop ? "top" : ""}">${n.nama}</div>`).join("")}
       </div>
     `;
   };
 
+  const makeLevel = (nodesHtml, withLines = true) => {
+    if (!nodesHtml.trim()) return "";
+    return `<div class="tree-level ${withLines ? "with-lines" : ""}">${nodesHtml}</div>`;
+  };
+
   const has = (...keys) => keys.some((k) => groups[k] && groups[k].length);
 
   let html = "";
 
+  // Level 1: Wali Kelas (paling atas, tanpa garis horizontal di atasnya)
   if (groups.walikelas) {
-    html += `<div class="tree-level">${makeNode("Wali Kelas", groups.walikelas, true)}</div>`;
+    html += makeLevel(
+      makeNode("Wali Kelas", groups.walikelas, true, true),
+      false
+    );
   }
 
+  // Level 2: Ketua + Wakil (kiri-kanan)
   if (has("ketua", "wakil")) {
-    html += `<div class="tree-level">${makeNode("Ketua Kelas", groups.ketua)}${makeNode("Wakil Ketua", groups.wakil)}</div>`;
+    html += makeLevel(
+      makeNode("Ketua Kelas", groups.ketua) +
+        makeNode("Wakil Ketua", groups.wakil)
+    );
   }
 
+  // Level 3: Sekretaris + Bendahara
   if (has("sekretaris", "bendahara")) {
-    html += `<div class="tree-level">${makeNode("Sekretaris", groups.sekretaris)}${makeNode("Bendahara", groups.bendahara)}</div>`;
+    html += makeLevel(
+      makeNode("Sekretaris", groups.sekretaris) +
+        makeNode("Bendahara", groups.bendahara)
+    );
   }
 
+  // Level 4: Keamanan + Kebersihan + Kesehatan
   if (has("keamanan", "kebersihan", "kesehatan")) {
-    html += `<div class="tree-level">${makeNode("Keamanan", groups.keamanan)}${makeNode("Kebersihan", groups.kebersihan)}${makeNode("Kesehatan", groups.kesehatan)}</div>`;
+    html += makeLevel(
+      makeNode("Keamanan", groups.keamanan) +
+        makeNode("Kebersihan", groups.kebersihan) +
+        makeNode("Kesehatan", groups.kesehatan)
+    );
   }
 
+  // Level 5: Peralatan
   if (groups.peralatan) {
-    html += `<div class="tree-level">${makeNode("Peralatan", groups.peralatan)}</div>`;
+    html += makeLevel(makeNode("Peralatan", groups.peralatan));
   }
 
+  // Level 6: Lainnya
   if (groups.lainnya) {
-    html += `<div class="tree-level">${makeNode("Anggota", groups.lainnya)}</div>`;
+    html += makeLevel(makeNode("Anggota", groups.lainnya));
   }
 
   return html;
 }
 
+// ============================================
+// ADD & DELETE STRUKTUR
+// ============================================
 async function addStruktur() {
-  const body = {
-    nama: $("s-nama").value.trim(),
-    jabatan: $("s-jabatan").value.trim(),
-    urutan: +$("s-urutan").value || 0,
-  };
+  const nama = $("s-nama").value.trim();
+  const jabatan = $("s-jabatan").value.trim();
+  const urutan = parseInt($("s-urutan").value) || 1;
 
-  if (!body.nama || !body.jabatan) return alert("Isi nama & jabatan");
+  if (!nama || !jabatan) return alert("Isi nama & jabatan");
+  if (urutan < 1) return alert("Urutan minimal 1");
+
+  const body = { nama, jabatan, urutan };
 
   const res = await fetch(API + "/api/structure", {
     method: "POST",
@@ -632,12 +672,14 @@ async function addStruktur() {
     body: JSON.stringify(body),
   });
 
+  const data = await res.json();
+
   if (res.ok) {
     await loadAllData();
     renderTab("struktur");
     alert("✅ Ditambah!");
   } else {
-    alert("❌ Gagal tambah");
+    alert("❌ " + data.message);
   }
 }
 
