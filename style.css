@@ -124,7 +124,6 @@ body {
   color: var(--neon-green);
   font-size: 24px;
   font-weight: 700;
-  letter-spacing: -0.5px;
 }
 
 .auth-box h2::before {
@@ -169,7 +168,7 @@ body {
 .auth-box input:focus {
   outline: none;
   border-color: var(--neon-green);
-  box-shadow: 0 0 20px rgba(0, 255, 157, 0.3), inset 0 0 10px rgba(0, 255, 157, 0.05);
+  box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
   background: rgba(10, 14, 39, 1);
 }
 
@@ -455,7 +454,6 @@ body {
   font-weight: 700;
   margin-bottom: 20px;
   color: var(--neon-green);
-  letter-spacing: -0.3px;
 }
 
 .card h2::before {
@@ -817,7 +815,7 @@ tbody tr:hover td {
 }
 
 /* ============================================
-   STRUKTUR — BAGAN POHON
+   STRUKTUR — BAGAN POHON VERTIKAL
    ============================================ */
 .tree-wrap {
   overflow-x: auto;
@@ -833,14 +831,20 @@ tbody tr:hover td {
   align-items: center;
   min-width: fit-content;
   font-family: 'JetBrains Mono', monospace;
+  padding: 20px 0;
 }
 
 .tree-level {
   display: flex;
   justify-content: center;
-  gap: 40px;
+  align-items: flex-start;
   position: relative;
-  padding: 30px 0;
+  padding: 40px 0 0 0;
+  gap: 60px;
+}
+
+.tree-level:first-child {
+  padding-top: 0;
 }
 
 .tree-node {
@@ -852,28 +856,29 @@ tbody tr:hover td {
 }
 
 .tree-node .node-label {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--neon-cyan);
   text-transform: uppercase;
   letter-spacing: 1.5px;
   font-weight: 700;
-  margin-bottom: 8px;
-  opacity: 0.9;
+  margin-bottom: 10px;
   text-align: center;
+  font-family: 'JetBrains Mono', monospace;
 }
 
 .tree-node .node-box {
   background: rgba(0, 255, 157, 0.08);
   border: 1px solid var(--neon-green);
   color: var(--text);
-  padding: 8px 16px;
-  border-radius: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
   box-shadow: 0 0 15px rgba(0, 255, 157, 0.2);
   transition: all 0.3s;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
 }
 
 .tree-node .node-box:hover {
@@ -884,31 +889,53 @@ tbody tr:hover td {
 .tree-node .node-box.top {
   background: rgba(168, 85, 247, 0.15);
   border-color: var(--neon-purple);
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
-  font-size: 14px;
-  padding: 12px 24px;
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.4);
+  font-size: 15px;
+  padding: 14px 28px;
+  font-weight: 700;
 }
 
-.tree-level.with-lines::before {
+.tree-node .node-box.top:hover {
+  box-shadow: 0 0 40px rgba(168, 85, 247, 0.7);
+}
+
+/* Garis penghubung horizontal (antar siblings) */
+.tree-level .tree-node::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 10%;
-  right: 10%;
+  top: -20px;
+  left: 0;
+  right: 0;
   height: 2px;
   background: var(--neon-green);
-  opacity: 0.3;
+  opacity: 0.6;
+  box-shadow: 0 0 8px rgba(0, 255, 157, 0.6);
 }
 
-.tree-level.with-lines .tree-node::before {
+.tree-level .tree-node:first-child::before {
+  left: 50%;
+}
+
+.tree-level .tree-node:last-child::before {
+  right: 50%;
+}
+
+.tree-level .tree-node:only-child::before {
+  display: none;
+}
+
+/* Garis penghubung vertikal (dari horizontal ke node) */
+.tree-level .tree-node::after {
   content: '';
   position: absolute;
-  top: -30px;
+  top: -20px;
   left: 50%;
+  transform: translateX(-50%);
   width: 2px;
-  height: 30px;
+  height: 20px;
   background: var(--neon-green);
-  opacity: 0.3;
+  opacity: 0.6;
+  box-shadow: 0 0 8px rgba(0, 255, 157, 0.6);
 }
 
 /* ============================================
@@ -953,6 +980,8 @@ tbody tr:hover td {
   table { font-size: 11px; }
   th, td { padding: 10px 12px; }
 
-  .tree-level { gap: 20px; }
-  .tree-node .node-box { font-size: 11px; padding: 6px 12px; }
+  .tree-level { gap: 30px; padding-top: 30px; }
+  .tree-node .node-box { font-size: 11px; padding: 8px 14px; }
+  .tree-node .node-box.top { font-size: 13px; padding: 10px 20px; }
+  .tree-node .node-label { font-size: 10px; }
 }
