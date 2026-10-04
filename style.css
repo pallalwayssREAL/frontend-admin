@@ -815,14 +815,15 @@ tbody tr:hover td {
 }
 
 /* ============================================
-   STRUKTUR — BAGAN POHON VERTIKAL
+   STRUKTUR — BAGAN KANAN KIRI
    ============================================ */
 .tree-wrap {
   overflow-x: auto;
-  padding: 40px 20px;
+  padding: 60px 20px;
   background: rgba(10, 14, 39, 0.4);
   border-radius: 12px;
   border: 1px solid var(--border);
+  min-height: 300px;
 }
 
 .tree {
@@ -831,7 +832,7 @@ tbody tr:hover td {
   align-items: center;
   min-width: fit-content;
   font-family: 'JetBrains Mono', monospace;
-  padding: 20px 0;
+  padding: 20px 40px;
 }
 
 .tree-level {
@@ -839,8 +840,8 @@ tbody tr:hover td {
   justify-content: center;
   align-items: flex-start;
   position: relative;
-  padding: 40px 0 0 0;
-  gap: 60px;
+  padding-top: 60px;
+  gap: 80px;
 }
 
 .tree-level:first-child {
@@ -852,7 +853,7 @@ tbody tr:hover td {
   flex-direction: column;
   align-items: center;
   position: relative;
-  padding: 0 10px;
+  padding: 0 8px;
 }
 
 .tree-node .node-label {
@@ -870,14 +871,14 @@ tbody tr:hover td {
   background: rgba(0, 255, 157, 0.08);
   border: 1px solid var(--neon-green);
   color: var(--text);
-  padding: 10px 20px;
+  padding: 10px 22px;
   border-radius: 10px;
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
   box-shadow: 0 0 15px rgba(0, 255, 157, 0.2);
   transition: all 0.3s;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   font-family: 'JetBrains Mono', monospace;
 }
 
@@ -891,7 +892,7 @@ tbody tr:hover td {
   border-color: var(--neon-purple);
   box-shadow: 0 0 25px rgba(168, 85, 247, 0.4);
   font-size: 15px;
-  padding: 14px 28px;
+  padding: 14px 30px;
   font-weight: 700;
 }
 
@@ -899,33 +900,46 @@ tbody tr:hover td {
   box-shadow: 0 0 40px rgba(168, 85, 247, 0.7);
 }
 
-.tree-level .tree-node::before {
+.tree-node.has-children::after {
   content: '';
   position: absolute;
-  top: -20px;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 60px;
+  background: var(--neon-green);
+  opacity: 0.5;
+  box-shadow: 0 0 8px rgba(0, 255, 157, 0.5);
+}
+
+.tree-level.with-lines .tree-node::before {
+  content: '';
+  position: absolute;
+  top: -30px;
   left: 0;
   right: 0;
   height: 2px;
   background: var(--neon-green);
-  opacity: 0.6;
-  box-shadow: 0 0 8px rgba(0, 255, 157, 0.6);
+  opacity: 0.5;
+  box-shadow: 0 0 8px rgba(0, 255, 157, 0.5);
 }
 
-.tree-level .tree-node:first-child::before { left: 50%; }
-.tree-level .tree-node:last-child::before { right: 50%; }
-.tree-level .tree-node:only-child::before { display: none; }
+.tree-level.with-lines .tree-node:first-child::before { left: 50%; }
+.tree-level.with-lines .tree-node:last-child::before { right: 50%; }
+.tree-level.with-lines .tree-node:only-child::before { display: none; }
 
-.tree-level .tree-node::after {
+.tree-level.with-lines .tree-node::after {
   content: '';
   position: absolute;
-  top: -20px;
+  top: -30px;
   left: 50%;
   transform: translateX(-50%);
   width: 2px;
-  height: 20px;
+  height: 30px;
   background: var(--neon-green);
-  opacity: 0.6;
-  box-shadow: 0 0 8px rgba(0, 255, 157, 0.6);
+  opacity: 0.5;
+  box-shadow: 0 0 8px rgba(0, 255, 157, 0.5);
 }
 
 /* ============================================
