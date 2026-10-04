@@ -32,31 +32,15 @@ if (IS_LOGIN_PAGE) {
 }
 
 async function initLoginPage() {
-  // Cek kalau sudah login → langsung ke admin.html
   try {
     const res = await fetch(API + "/api/auth/me", { credentials: "include" });
     if (res.ok) {
       const d = await res.json();
       if (d.user.role === "admin" || d.user.role === "developer") {
         window.location.href = "admin.html";
-        return;
       }
     }
   } catch {}
-
-  // Cek apakah butuh setup
-  try {
-    const res = await fetch(API + "/api/auth/setup-status");
-    const data = await res.json();
-    if (data.needsSetup) {
-      // Tampilkan form register
-      $("box-title").textContent = "⚙️ Setup Awal";
-      $("login-form").classList.add("hidden");
-      $("register-form").classList.remove("hidden");
-    }
-  } catch (err) {
-    console.error("Gagal cek setup:", err);
-  }
 }
 
 function showMsg(text, type) {
@@ -98,41 +82,6 @@ async function handleLogin() {
 }
 
 // ============================================
-// REGISTER (setup awal — sekali)
-// ============================================
-async function handleRegister() {
-  const name = $("reg-name").value.trim();
-  const email = $("reg-email").value.trim();
-  const password = $("reg-password").value;
-  const jabatan = $("reg-jabatan").value.trim();
-
-  if (!name || !email || !password)
-    return showMsg("Semua field wajib diisi", "error");
-  if (password.length < 6)
-    return showMsg("Password minimal 6 karakter", "error");
-
-  showMsg("Mendaftarkan...", "");
-
-  try {
-    const res = await fetch(API + "/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ name, email, password, jabatan }),
-    });
-
-    const data = await res.json();
-    if (!res.ok) return showMsg(data.message, "error");
-
-    showMsg("Setup berhasil! Masuk...", "success");
-    setTimeout(() => (window.location.href = "admin.html"), 800);
-  } catch (err) {
-    console.error(err);
-    showMsg("Gagal konek server", "error");
-  }
-}
-
-// ============================================
 // ========== ADMIN PANEL ==========
 // ============================================
 if (!IS_LOGIN_PAGE) {
@@ -157,13 +106,11 @@ async function initAdminPanel() {
     CURRENT_USER = data.user;
     $("user-info").textContent = `👋 ${CURRENT_USER.name}`;
 
-    // Badge role
     const badge = $("role-badge");
     if (CURRENT_USER.role === "developer") {
       badge.textContent = "DEVELOPER";
       badge.style.background = "#d4edda";
       badge.style.color = "#155724";
-      // Munculkan tab Akses Akun
       $("tab-akun").classList.remove("hidden");
     } else {
       badge.textContent = "ADMIN";
@@ -179,10 +126,8 @@ async function initAdminPanel() {
 
 function logout() {
   if (!confirm("Yakin mau logout?")) return;
-  fetch(API + "/api/auth/logout", {
-    method: "POST",
-    credentials: "include",
-  }).finally(() => (window.location.href = "index.html"));
+  fetch(API + "/api/auth/logout", { method: "POST", credentials: "include" })
+    .finally(() => (window.location.href = "index.html"));
 }
 
 // ============================================
@@ -218,9 +163,7 @@ async function loadAllData() {
 
 async function loadAdmins() {
   try {
-    const res = await fetch(API + "/api/auth/admins", {
-      credentials: "include",
-    });
+    const res = await fetch(API + "/api/auth/admins", { credentials: "include" });
     if (!res.ok) return;
     const data = await res.json();
     DATA.admins = data.admins || [];
@@ -233,9 +176,7 @@ async function loadAdmins() {
 // TABS
 // ============================================
 function switchTab(tab, btn) {
-  document
-    .querySelectorAll(".tab")
-    .forEach((t) => t.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
   if (btn) btn.classList.add("active");
 
   if (tab === "akun") {
@@ -257,7 +198,7 @@ function renderTab(tab) {
 }
 
 // ============================================
-// TAB 1: INFO KELAS (EDIT)
+// TAB 1: INFO KELAS
 // ============================================
 function renderInfo() {
   const i = DATA.info || {};
@@ -328,28 +269,20 @@ function renderPelajaran() {
         </div>
         <button class="btn" onclick="addPelajaran()">➕ Tambah</button>
       </div>
-      ${
-        data.length
-          ? `
+      ${data.length ? `
         <table>
           <thead><tr><th>Hari</th><th>Jam</th><th>Waktu</th><th>Mapel</th><th>Guru</th><th>Ruangan</th><th>Aksi</th></tr></thead>
           <tbody>
-            ${data
-              .map(
-                (d) => `
+            ${data.map(d => `
               <tr>
                 <td>${d.hari}</td><td>${d.jamKe}</td><td>${d.waktu}</td>
                 <td><strong>${d.mataPelajaran}</strong></td><td>${d.guru || "-"}</td><td>${d.ruangan || "-"}</td>
                 <td><button class="btn-sm btn-danger" onclick="delPelajaran(${d.id})">Hapus</button></td>
               </tr>
-            `,
-              )
-              .join("")}
+            `).join("")}
           </tbody>
         </table>
-      `
-          : '<div class="empty">Belum ada jadwal.</div>'
-      }
+      ` : '<div class="empty">Belum ada jadwal.</div>'}
     </div>
   `;
 }
@@ -381,10 +314,7 @@ async function addPelajaran() {
 
 async function delPelajaran(id) {
   if (!confirm("Hapus jadwal ini?")) return;
-  await fetch(API + "/api/schedule/" + id, {
-    method: "DELETE",
-    credentials: "include",
-  });
+  await fetch(API + "/api/schedule/" + id, { method: "DELETE", credentials: "include" });
   await loadAllData();
   renderTab("pelajaran");
 }
@@ -408,35 +338,24 @@ function renderPiket() {
         <div class="form-group"><label>Tugas</label><input id="c-tugas" placeholder="Menyapu, buang sampah"></div>
         <button class="btn" onclick="savePiket()">💾 Simpan</button>
       </div>
-      ${
-        data.length
-          ? `
+      ${data.length ? `
         <div class="piket-grid">
-          ${data
-            .map(
-              (d) => `
+          ${data.map(d => `
             <div class="piket-card">
               <div class="hari">${d.hari}</div>
-              <ul>${(d.petugas || []).map((p) => `<li>${p}</li>`).join("")}</ul>
+              <ul>${(d.petugas || []).map(p => `<li>${p}</li>`).join("")}</ul>
               ${d.tugas ? `<div class="tugas">📝 ${d.tugas}</div>` : ""}
               <button class="btn-sm btn-danger" style="margin-top:10px;" onclick="delPiket(${d.id})">Hapus</button>
             </div>
-          `,
-            )
-            .join("")}
+          `).join("")}
         </div>
-      `
-          : '<div class="empty">Belum ada piket.</div>'
-      }
+      ` : '<div class="empty">Belum ada piket.</div>'}
     </div>
   `;
 }
 
 async function savePiket() {
-  const petugas = $("c-petugas")
-    .value.split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+  const petugas = $("c-petugas").value.split(",").map(s => s.trim()).filter(Boolean);
   if (!petugas.length) return alert("Isi minimal 1 petugas");
 
   const body = { hari: $("c-hari").value, petugas, tugas: $("c-tugas").value };
@@ -455,10 +374,7 @@ async function savePiket() {
 
 async function delPiket(id) {
   if (!confirm("Hapus piket ini?")) return;
-  await fetch(API + "/api/cleaning/" + id, {
-    method: "DELETE",
-    credentials: "include",
-  });
+  await fetch(API + "/api/cleaning/" + id, { method: "DELETE", credentials: "include" });
   await loadAllData();
   renderTab("piket");
 }
@@ -477,14 +393,9 @@ function renderPengumuman() {
         <div class="form-group"><label>Isi</label><textarea id="a-isi"></textarea></div>
         <button class="btn" onclick="addAnn()">📤 Kirim</button>
       </div>
-      ${
-        data.length
-          ? data
-              .map((a) => {
-                const tgl = a.createdAt
-                  ? new Date(a.createdAt).toLocaleString("id-ID")
-                  : "-";
-                return `
+      ${data.length ? data.map(a => {
+        const tgl = a.createdAt ? new Date(a.createdAt).toLocaleString("id-ID") : "-";
+        return `
           <div class="announcement">
             <h4>${a.judul}</h4>
             <div class="meta">Oleh ${a.author?.name || "?"} • ${tgl}</div>
@@ -492,10 +403,7 @@ function renderPengumuman() {
             <button class="btn-sm btn-danger" style="margin-top:10px;" onclick="delAnn(${a._id})">Hapus</button>
           </div>
         `;
-              })
-              .join("")
-          : '<div class="empty">Belum ada pengumuman.</div>'
-      }
+      }).join("") : '<div class="empty">Belum ada pengumuman.</div>'}
     </div>
   `;
 }
@@ -519,10 +427,7 @@ async function addAnn() {
 
 async function delAnn(id) {
   if (!confirm("Hapus pengumuman ini?")) return;
-  await fetch(API + "/api/announcement/" + id, {
-    method: "DELETE",
-    credentials: "include",
-  });
+  await fetch(API + "/api/announcement/" + id, { method: "DELETE", credentials: "include" });
   await loadAllData();
   renderTab("pengumuman");
 }
@@ -545,16 +450,11 @@ function renderAgenda() {
         <div class="form-group"><label>Deskripsi</label><textarea id="e-desk"></textarea></div>
         <button class="btn" onclick="addEvent()">➕ Tambah</button>
       </div>
-      ${
-        data.length
-          ? data
-              .map((e) => {
-                const d = new Date(e.tanggal);
-                const day = isNaN(d) ? "-" : d.getDate();
-                const month = isNaN(d)
-                  ? "-"
-                  : d.toLocaleString("id-ID", { month: "short" });
-                return `
+      ${data.length ? data.map(e => {
+        const d = new Date(e.tanggal);
+        const day = isNaN(d) ? "-" : d.getDate();
+        const month = isNaN(d) ? "-" : d.toLocaleString("id-ID", { month: "short" });
+        return `
           <div class="event">
             <div class="date-badge">
               <div class="day">${day}</div>
@@ -567,10 +467,7 @@ function renderAgenda() {
             <button class="btn-sm btn-danger" onclick="delEvent(${e._id})">Hapus</button>
           </div>
         `;
-              })
-              .join("")
-          : '<div class="empty">Belum ada agenda.</div>'
-      }
+      }).join("") : '<div class="empty">Belum ada agenda.</div>'}
     </div>
   `;
 }
@@ -599,10 +496,7 @@ async function addEvent() {
 
 async function delEvent(id) {
   if (!confirm("Hapus agenda ini?")) return;
-  await fetch(API + "/api/event/" + id, {
-    method: "DELETE",
-    credentials: "include",
-  });
+  await fetch(API + "/api/event/" + id, { method: "DELETE", credentials: "include" });
   await loadAllData();
   renderTab("agenda");
 }
@@ -611,50 +505,39 @@ async function delEvent(id) {
 // TAB 6: STRUKTUR
 // ============================================
 function renderStruktur() {
-  const users = (DATA.users || []).filter((u) => u.jabatan);
-
+  const users = (DATA.users || []).filter(u => u.jabatan);
   return `
     <div class="card">
       <h2>👥 Struktur Organisasi Kelas</h2>
       <p style="color:#888;font-size:13px;margin-bottom:15px;">
         Struktur diambil otomatis dari data murid yang mendaftar dengan jabatan.
       </p>
-      ${
-        users.length
-          ? `
+      ${users.length ? `
         <div class="struktur-grid">
-          ${users
-            .map(
-              (u) => `
+          ${users.map(u => `
             <div class="struktur-card">
               <div class="avatar">${(u.name || "?").charAt(0).toUpperCase()}</div>
               <div class="jabatan">${u.jabatan}</div>
               <div class="nama">${u.name}</div>
             </div>
-          `,
-            )
-            .join("")}
+          `).join("")}
         </div>
-      `
-          : '<div class="empty">Belum ada murid dengan jabatan.</div>'
-      }
+      ` : '<div class="empty">Belum ada murid dengan jabatan.</div>'}
     </div>
   `;
 }
 
 // ============================================
-// TAB 7: AKSES AKUN (khusus developer)
+// TAB 7: AKSES AKUN
 // ============================================
 function renderAksesAkun() {
   const admins = DATA.admins || [];
-
   return `
     <div class="card">
       <h2>🔑 Akses Akun</h2>
       <p style="color:#888;font-size:13px;margin-bottom:15px;">
         Kelola akun admin & developer. Cuma developer yang bisa akses halaman ini.
       </p>
-
       <div class="admin-form">
         <h3>➕ Buat Akun Admin Baru</h3>
         <div class="row">
@@ -674,47 +557,32 @@ function renderAksesAkun() {
         </div>
         <button class="btn" onclick="addAdmin()">➕ Buat Akun</button>
       </div>
-
-      <h3 style="margin-top:20px;margin-bottom:12px;">📋 Daftar Akun Admin & Developer</h3>
-      ${
-        admins.length
-          ? `
+      <h3 style="margin-top:20px;margin-bottom:12px;">📋 Daftar Akun</h3>
+      ${admins.length ? `
         <table>
-          <thead>
-            <tr>
-              <th>Nama</th><th>Email</th><th>Role</th><th>Jabatan</th><th>Aksi</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Nama</th><th>Email</th><th>Role</th><th>Jabatan</th><th>Aksi</th></tr></thead>
           <tbody>
-            ${admins
-              .map(
-                (a) => `
+            ${admins.map(a => `
               <tr>
-                <td><strong>${a.name}</strong>${a.id === CURRENT_USER.id ? ' <span style="color:#667eea;font-size:11px;">(kamu)</span>' : ""}</td>
+                <td><strong>${a.name}</strong>${a.id === CURRENT_USER.id ? ' <span style="color:#667eea;font-size:11px;">(kamu)</span>' : ''}</td>
                 <td>${a.email}</td>
                 <td>
-                  <span class="badge ${a.role === "developer" ? "admin" : "anggota"}"
-                        style="${a.role === "developer" ? "background:#d4edda;color:#155724;" : ""}">
+                  <span class="badge ${a.role === 'developer' ? 'admin' : 'anggota'}"
+                        style="${a.role === 'developer' ? 'background:#d4edda;color:#155724;' : ''}">
                     ${a.role.toUpperCase()}
                   </span>
                 </td>
                 <td>${a.jabatan || "-"}</td>
                 <td>
-                  ${
-                    a.id === CURRENT_USER.id
-                      ? '<span style="color:#999;font-size:12px;">—</span>'
-                      : `<button class="btn-sm btn-danger" onclick="delAdmin(${a.id})">Hapus</button>`
-                  }
+                  ${a.id === CURRENT_USER.id
+                    ? '<span style="color:#999;font-size:12px;">—</span>'
+                    : `<button class="btn-sm btn-danger" onclick="delAdmin(${a.id})">Hapus</button>`}
                 </td>
               </tr>
-            `,
-              )
-              .join("")}
+            `).join("")}
           </tbody>
         </table>
-      `
-          : '<div class="empty">Belum ada akun admin.</div>'
-      }
+      ` : '<div class="empty">Belum ada akun admin.</div>'}
     </div>
   `;
 }
